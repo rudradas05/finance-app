@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
+import recordRoutes from "./routes/records.js";
 
 dotenv.config();
 
@@ -12,10 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//  Routes
-
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/records", recordRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "Finance Backend API is running!" });
