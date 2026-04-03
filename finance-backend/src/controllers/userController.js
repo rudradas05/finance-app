@@ -24,7 +24,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// ─── GET SINGLE USER (admin only) ────────────────────────
+//  GET SINGLE USER (admin only) 
 export const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -106,7 +106,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// ─── GET OWN PROFILE (any logged in user) ────────────────
+//  GET OWN PROFILE (any logged in user) 
 export const getMyProfile = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
