@@ -5,16 +5,18 @@ import {
   updateUser,
   deleteUser,
   getMyProfile,
+  changePassword,
 } from "../controllers/userController.js";
 import auth from "../middleware/auth.js";
 import roleCheck from "../middleware/roleCheck.js";
 
 const router = express.Router();
 
-// Any logged in user can see their own profile
+// Any logged in user
 router.get("/me", auth, getMyProfile);
+router.put("/change-password", auth, changePassword);
 
-// Admin only routes
+// Admin only
 router.get("/", auth, roleCheck("admin"), getAllUsers);
 router.get("/:id", auth, roleCheck("admin"), getUserById);
 router.put("/:id", auth, roleCheck("admin"), updateUser);
