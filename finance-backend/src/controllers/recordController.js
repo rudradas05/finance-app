@@ -1,7 +1,7 @@
-import prisma from '../config/db.js';
-import { validationResult } from 'express-validator';
+import prisma from "../config/db.js";
+import { validationResult } from "express-validator";
 
-//  CREATE RECORD (admin only) 
+//  CREATE RECORD (admin only)
 export const createRecord = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -23,38 +23,54 @@ export const createRecord = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: 'Record created successfully',
+      message: "Record created successfully",
       record,
     });
   } catch (error) {
-    console.error('Create record error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Create record error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-//  GET ALL RECORDS (admin + analyst) 
+//  GET ALL RECORDS (admin + analyst)
 export const getAllRecords = async (req, res) => {
-  const { type, category, startDate, endDate, page = 1, limit = 10 } = req.query;
+  const {
+    type,
+    category,
+    startDate,
+    endDate,
+    search,
+    page = 1,
+    limit = 10,
+  } = req.query;
 
   try {
-    
+    // Build dynamic filter
     const where = { isDeleted: false };
 
     if (type) where.type = type;
-    if (category) where.category = { contains: category, mode: 'insensitive' };
+    if (category) where.category = { contains: category, mode: "insensitive" };
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(startDate);
       if (endDate) where.date.lte = new Date(endDate);
     }
 
-    
+    // Search across category and notes fields
+    if (search) {
+      where.OR = [
+        { category: { contains: search, mode: "insensitive" } },
+        { notes: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const total = await prisma.financialRecord.count({ where });
 
     const records = await prisma.financialRecord.findMany({
       where,
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
       skip,
       take: parseInt(limit),
       include: {
@@ -72,12 +88,12 @@ export const getAllRecords = async (req, res) => {
       records,
     });
   } catch (error) {
-    console.error('Get records error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Get records error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-//  GET SINGLE RECORD (admin + analyst) 
+//  GET SINGLE RECORD (admin + analyst)
 export const getRecordById = async (req, res) => {
   const { id } = req.params;
 
@@ -92,17 +108,17 @@ export const getRecordById = async (req, res) => {
     });
 
     if (!record) {
-      return res.status(404).json({ message: 'Record not found' });
+      return res.status(404).json({ message: "Record not found" });
     }
 
     return res.status(200).json({ record });
   } catch (error) {
-    console.error('Get record error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Get record error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-//  UPDATE RECORD (admin only) 
+//  UPDATE RECORD (admin only)
 export const updateRecord = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -118,7 +134,7 @@ export const updateRecord = async (req, res) => {
     });
 
     if (!existing) {
-      return res.status(404).json({ message: 'Record not found' });
+      return res.status(404).json({ message: "Record not found" });
     }
 
     const updated = await prisma.financialRecord.update({
@@ -133,16 +149,16 @@ export const updateRecord = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Record updated successfully',
+      message: "Record updated successfully",
       record: updated,
     });
   } catch (error) {
-    console.error('Update record error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Update record error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-//  SOFT DELETE RECORD (admin only) 
+//  SOFT DELETE RECORD (admin only)
 export const deleteRecord = async (req, res) => {
   const { id } = req.params;
 
@@ -152,7 +168,7 @@ export const deleteRecord = async (req, res) => {
     });
 
     if (!existing) {
-      return res.status(404).json({ message: 'Record not found' });
+      return res.status(404).json({ message: "Record not found" });
     }
 
     await prisma.financialRecord.update({
@@ -160,9 +176,9 @@ export const deleteRecord = async (req, res) => {
       data: { isDeleted: true },
     });
 
-    return res.status(200).json({ message: 'Record deleted successfully' });
+    return res.status(200).json({ message: "Record deleted successfully" });
   } catch (error) {
-    console.error('Delete record error:', error.message);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error("Delete record error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
