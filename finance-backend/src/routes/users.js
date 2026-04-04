@@ -13,7 +13,7 @@ import roleCheck from "../middleware/roleCheck.js";
 const router = express.Router();
 
 // Any logged in user
-router.get("/me", auth, getMyProfile);
+router.get("/my-profile", auth, getMyProfile);
 router.put("/change-password", auth, changePassword);
 
 // Admin only
