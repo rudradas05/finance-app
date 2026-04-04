@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import { validationResult } from "express-validator";
+import { format } from "fast-csv";
 
 //  CREATE RECORD (admin only)
 export const createRecord = async (req, res) => {
@@ -179,6 +180,63 @@ export const deleteRecord = async (req, res) => {
     return res.status(200).json({ message: "Record deleted successfully" });
   } catch (error) {
     console.error("Delete record error:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const exportRecordsCSV = async (req, res) => {
+  const { type, category, startDate, endDate } = req.query;
+
+  try {
+    // Build filter same as getAllRecords
+    const where = { isDeleted: false };
+
+    if (type) where.type = type;
+    if (category) where.category = { contains: category, mode: "insensitive" };
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) where.date.gte = new Date(startDate);
+      if (endDate) where.date.lte = new Date(endDate);
+    }
+
+    const records = await prisma.financialRecord.findMany({
+      where,
+      orderBy: { date: "desc" },
+      include: {
+        user: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+
+    
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=financial_records.csv",
+    );
+
+    
+    const csvStream = format({ headers: true });
+    csvStream.pipe(res);
+
+    
+    records.forEach((record) => {
+      csvStream.write({
+        ID: record.id,
+        Amount: record.amount,
+        Type: record.type,
+        Category: record.category,
+        Date: new Date(record.date).toISOString().split("T")[0],
+        Notes: record.notes || "",
+        CreatedBy: record.user ? record.user.name : "N/A",
+        CreatedAt: new Date(record.createdAt).toISOString().split("T")[0],
+      });
+    });
+
+    csvStream.end();
+  } catch (error) {
+    console.error("Export CSV error:", error.message);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -5,6 +5,7 @@ import {
   getRecordById,
   updateRecord,
   deleteRecord,
+  exportRecordsCSV,
 } from "../controllers/recordController.js";
 import auth from "../middleware/auth.js";
 import roleCheck from "../middleware/roleCheck.js";
@@ -17,9 +18,10 @@ const router = express.Router();
 
 // Admin + Analyst can view records
 router.get("/", auth, roleCheck("admin", "analyst"), getAllRecords);
+router.get("/export", auth, roleCheck("admin"), exportRecordsCSV);
 router.get("/:id", auth, roleCheck("admin", "analyst"), getRecordById);
 
-// Admin only can create, update, delete
+// Admin only
 router.post("/", auth, roleCheck("admin"), createRecordValidator, createRecord);
 router.put(
   "/:id",
