@@ -201,7 +201,7 @@ Create a `.env` file inside `finance-backend/`:
 
 ```env
 PORT=3000
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/finance_db"
+DATABASE_URL=your db url
 JWT_SECRET=your_jwt_secret_key
 ```
 
