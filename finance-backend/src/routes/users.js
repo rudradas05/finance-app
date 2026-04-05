@@ -9,17 +9,33 @@ import {
 } from "../controllers/userController.js";
 import auth from "../middleware/auth.js";
 import roleCheck from "../middleware/roleCheck.js";
+import auditLog from "../middleware/auditLog.js";
 
 const router = express.Router();
 
-// Any logged in user
-router.get("/my-profile", auth, getMyProfile);
-router.put("/change-password", auth, changePassword);
+router.get("/me", auth, getMyProfile);
+router.put(
+  "/change-password",
+  auth,
+  auditLog("CHANGE_PASSWORD", "user"),
+  changePassword,
+);
 
-// Admin only
 router.get("/", auth, roleCheck("admin"), getAllUsers);
 router.get("/:id", auth, roleCheck("admin"), getUserById);
-router.put("/:id", auth, roleCheck("admin"), updateUser);
-router.delete("/:id", auth, roleCheck("admin"), deleteUser);
+router.put(
+  "/:id",
+  auth,
+  roleCheck("admin"),
+  auditLog("UPDATE", "user"),
+  updateUser,
+);
+router.delete(
+  "/:id",
+  auth,
+  roleCheck("admin"),
+  auditLog("DELETE", "user"),
+  deleteUser,
+);
 
 export default router;

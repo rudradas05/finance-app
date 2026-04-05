@@ -13,23 +13,35 @@ import {
   createRecordValidator,
   updateRecordValidator,
 } from "../validators/recordValidator.js";
+import auditLog from "../middleware/auditLog.js";
 
 const router = express.Router();
 
-// Admin + Analyst can view records
 router.get("/", auth, roleCheck("admin", "analyst"), getAllRecords);
 router.get("/export", auth, roleCheck("admin"), exportRecordsCSV);
 router.get("/:id", auth, roleCheck("admin", "analyst"), getRecordById);
-
-// Admin only
-router.post("/", auth, roleCheck("admin"), createRecordValidator, createRecord);
+router.post(
+  "/",
+  auth,
+  roleCheck("admin"),
+  createRecordValidator,
+  auditLog("CREATE", "record"),
+  createRecord,
+);
 router.put(
   "/:id",
   auth,
   roleCheck("admin"),
   updateRecordValidator,
+  auditLog("UPDATE", "record"),
   updateRecord,
 );
-router.delete("/:id", auth, roleCheck("admin"), deleteRecord);
+router.delete(
+  "/:id",
+  auth,
+  roleCheck("admin"),
+  auditLog("DELETE", "record"),
+  deleteRecord,
+);
 
 export default router;

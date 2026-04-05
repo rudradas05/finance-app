@@ -22,7 +22,8 @@ model User {
   status    Status   @default(active)
   createdAt DateTime @default(now()) @map("created_at")
 
-  records FinancialRecord[]
+  records   FinancialRecord[]
+  auditLogs AuditLog[]
 
   @@map("users")
 }
@@ -42,6 +43,22 @@ model FinancialRecord {
   user      User?   @relation(fields: [createdBy], references: [id])
 
   @@map("financial_records")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  userEmail  String?  @map("user_email")
+  action     String
+  resource   String
+  resourceId String?  @map("resource_id")
+  details    String?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
 }
 
 enum Role {
