@@ -42,6 +42,19 @@ app.get("/", (req, res) => {
   res.json({ message: "Finance Backend API is running!" });
 });
 
+// 404 handler — route not found
+app.use((req, res) => {
+  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+});
+
+// Global error handler — catches any unhandled errors
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.message);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal server error",
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
